@@ -1,165 +1,139 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generator Haseł</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator JSON</title>
 
-    body {
-      background: linear-gradient(135deg, #0f172a, #334155);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 16px;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #334155);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 
-    .card {
-      background: #1e293b;
-      border-radius: 20px;
-      padding: 24px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
+.container {
+  background: #1e293b;
+  padding: 24px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
 
-    h1 { font-size: 22px; margin-bottom: 12px; }
-    .badge { font-size: 12px; opacity: 0.7; margin-bottom: 12px; }
+h1 { margin-bottom: 16px; }
 
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      margin-top: 10px;
-      font-size: 16px;
-    }
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+}
 
-    button {
-      margin-top: 12px;
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      background: #22c55e;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+button {
+  margin-top: 14px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #22c55e;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
 
-    button:hover { background: #16a34a; }
+button:hover { background: #16a34a; }
 
-    .info {
-      margin-top: 12px;
-      font-size: 14px;
-      opacity: 0.8;
-    }
+.output {
+  margin-top: 16px;
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
 
-    .letters {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .letter {
-      background: #334155;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .message {
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    @media (max-width: 480px) {
-      .card { padding: 18px; }
-      h1 { font-size: 18px; }
-    }
-  </style>
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+</style>
 </head>
+
 <body>
 
-<div class="card">
-  <h1 id="title"></h1>
-  <div class="badge" id="meta"></div>
+<div class="container">
+  <h1>Generator JSON</h1>
 
-  <div class="letters" id="letters"></div>
+  <input id="haslo" placeholder="Hasło (np. Diamentowy miecz)">
+  <input id="kategoria" placeholder="Kategoria">
 
-  <input id="input" placeholder="Wpisz unikalne litery..." />
-  <button onclick="check()">Sprawdź</button>
+  <input id="maxProb" type="number" placeholder="Max prób">
+  <input id="punkty" type="number" placeholder="Punkty">
 
-  <div class="info" id="limits"></div>
-  <div class="message" id="message"></div>
+  <label>
+    Trudność:
+    <select id="trudnosc">
+      <option value="easy">easy</option>
+      <option value="medium">medium</option>
+      <option value="hard">hard</option>
+    </select>
+  </label>
+
+  <label>
+    <input type="checkbox" id="karaToggle"> Dodaj karę
+  </label>
+
+  <input id="kara" type="number" placeholder="Kara" style="display:none;">
+
+  <button onclick="generate()">Generuj JSON</button>
+
+  <div class="output" id="output"></div>
 </div>
 
 <script>
-const data = [
-  {
-    "haslo": "Diamentowy miecz",
-    "kategoria": "Przedmioty",
-    "maxProb": 10,
-    "maxLiter": 11,
-    "punkty": 10,
-    "kara": 8,
-    "trudnosc": "easy"
-  }
-];
+const karaToggle = document.getElementById("karaToggle");
+const karaInput = document.getElementById("kara");
 
-let current = data[0];
+karaToggle.addEventListener("change", () => {
+  karaInput.style.display = karaToggle.checked ? "block" : "none";
+});
 
 function getUniqueLetters(text) {
-  return [...new Set(text.replace(/\s+/g, '').toLowerCase())];
+  return [...new Set(text.replace(/\\s+/g, '').toLowerCase())];
 }
 
-const uniqueLetters = getUniqueLetters(current.haslo);
+function generate() {
+  const haslo = document.getElementById("haslo").value;
+  const kategoria = document.getElementById("kategoria").value;
+  const maxProb = Number(document.getElementById("maxProb").value);
+  const punkty = Number(document.getElementById("punkty").value);
+  const trudnosc = document.getElementById("trudnosc").value;
 
-// UI init
+  const uniqueLetters = getUniqueLetters(haslo);
 
-document.getElementById("title").innerText = current.haslo;
-document.getElementById("meta").innerText = `${current.kategoria} • ${current.trudnosc}`;
-document.getElementById("limits").innerText = `Max liter: ${uniqueLetters.length}`;
+  let obj = {
+    haslo,
+    kategoria,
+    maxProb,
+    maxLiter: uniqueLetters.length,
+    punkty,
+    trudnosc
+  };
 
-const lettersDiv = document.getElementById("letters");
-uniqueLetters.forEach(l => {
-  const el = document.createElement("div");
-  el.className = "letter";
-  el.innerText = l;
-  lettersDiv.appendChild(el);
-});
-
-const input = document.getElementById("input");
-
-input.addEventListener("input", (e) => {
-  let value = e.target.value.toLowerCase();
-
-  // limit długości
-  if (value.length > uniqueLetters.length) {
-    value = value.slice(0, uniqueLetters.length);
+  if (karaToggle.checked) {
+    obj.kara = Number(document.getElementById("kara").value);
   }
 
-  // usuwanie duplikatów
-  let unique = [...new Set(value.split(''))];
-
-  input.value = unique.join('');
-});
-
-function check() {
-  const value = input.value;
-
-  const correct = uniqueLetters.every(l => value.includes(l));
-
-  if (correct) {
-    document.getElementById("message").innerText = "✅ Wszystkie litery poprawne!";
-  } else {
-    document.getElementById("message").innerText = "❌ Brakuje liter";
-  }
+  document.getElementById("output").innerText = JSON.stringify([obj], null, 2);
 }
 </script>
 
