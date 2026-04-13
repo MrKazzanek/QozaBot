@@ -3,86 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generator JSON</title>
+<title>Generator JSON PRO</title>
 
 <style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #ffffff;
+  --accent: #22c55e;
+}
+
+.light {
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+}
+
 body {
   margin: 0;
   font-family: Arial;
-  background: linear-gradient(135deg, #0f172a, #334155);
-  color: white;
+  background: var(--bg);
+  color: var(--text);
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  padding: 20px;
 }
 
 .container {
-  background: #1e293b;
-  padding: 24px;
-  border-radius: 20px;
   width: 100%;
-  max-width: 500px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  max-width: 600px;
+  background: var(--card);
+  padding: 20px;
+  border-radius: 20px;
 }
 
-h1 { margin-bottom: 16px; }
+h1 { margin-bottom: 10px; }
 
 input, select {
   width: 100%;
   padding: 10px;
-  margin-top: 10px;
+  margin-top: 8px;
   border-radius: 10px;
   border: none;
-  font-size: 14px;
 }
 
 button {
-  margin-top: 10px;
-  width: 100%;
-  padding: 12px;
+  margin-top: 8px;
+  padding: 10px;
   border: none;
   border-radius: 10px;
-  background: #22c55e;
+  background: var(--accent);
   color: white;
-  font-size: 15px;
   cursor: pointer;
 }
 
-button:hover { background: #16a34a; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-.row {
+.list { margin-top: 10px; }
+
+.item {
   display: flex;
-  gap: 8px;
-}
-
-.output {
-  margin-top: 16px;
-  background: #0f172a;
-  padding: 12px;
+  justify-content: space-between;
+  background: rgba(0,0,0,0.2);
+  padding: 8px;
   border-radius: 10px;
-  font-size: 13px;
-  white-space: pre-wrap;
-}
-
-.small {
-  font-size: 13px;
-  opacity: 0.8;
   margin-top: 6px;
 }
 
-.list {
-  margin-top: 12px;
-  font-size: 13px;
-  max-height: 120px;
-  overflow-y: auto;
-}
-
-.item {
-  background: #334155;
-  padding: 6px;
-  border-radius: 6px;
-  margin-top: 4px;
+.output {
+  margin-top: 10px;
+  background: black;
+  color: #00ff9d;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: pre-wrap;
 }
 </style>
 </head>
@@ -90,12 +85,20 @@ button:hover { background: #16a34a; }
 <body>
 
 <div class="container">
-  <h1>Generator JSON</h1>
+  <h1>Generator JSON PRO</h1>
+
+  <button onclick="toggleTheme()">🎨 Zmień motyw</button>
+
+  <input id="search" placeholder="🔍 Szukaj hasła..." oninput="renderList()">
+
+  <select id="sort" onchange="renderList()">
+    <option value="">Sortowanie</option>
+    <option value="easy">easy</option>
+    <option value="medium">medium</option>
+    <option value="hard">hard</option>
+  </select>
 
   <input id="haslo" placeholder="Hasło">
-  <button onclick="calcLetters()">Policz unikalne litery</button>
-  <div class="small" id="lettersResult"></div>
-
   <input id="kategoria" placeholder="Kategoria">
   <input id="maxProb" type="number" placeholder="Max prób">
   <input id="maxLiter" type="number" placeholder="Max liter">
@@ -107,94 +110,94 @@ button:hover { background: #16a34a; }
     <option value="hard">hard</option>
   </select>
 
-  <label>
-    <input type="checkbox" id="karaToggle"> Dodaj karę
-  </label>
-
+  <label><input type="checkbox" id="karaToggle"> Kara</label>
   <input id="kara" type="number" placeholder="Kara" style="display:none;">
 
-  <button onclick="addItem()">➕ Dodaj do listy</button>
+  <button onclick="addItem()">➕ Dodaj</button>
+
+  <input type="file" onchange="importJSON(event)">
 
   <div class="list" id="list"></div>
 
   <button onclick="generate()">Generuj JSON</button>
-
-  <div class="row">
-    <button onclick="copyJSON()">📋 Kopiuj</button>
-    <button onclick="downloadJSON()">💾 Pobierz</button>
-  </div>
+  <button onclick="copyJSON()">📋 Kopiuj</button>
+  <button onclick="downloadJSON()">💾 Pobierz</button>
 
   <div class="output" id="output"></div>
 </div>
 
 <script>
-let items = [];
+let items = JSON.parse(localStorage.getItem("items") || "[]");
+let editIndex = null;
 
-const karaToggle = document.getElementById("karaToggle");
-const karaInput = document.getElementById("kara");
+function save(){ localStorage.setItem("items", JSON.stringify(items)); }
 
-karaToggle.addEventListener("change", () => {
-  karaInput.style.display = karaToggle.checked ? "block" : "none";
-});
+karaToggle.onchange = ()=> kara.style.display = karaToggle.checked ? 'block':'none';
 
-function getUniqueLetters(text) {
-  return [...new Set(text.replace(/\s+/g, '').toLowerCase())];
+function addItem(){
+  let obj = {
+    haslo: haslo.value,
+    kategoria: kategoria.value,
+    maxProb: +maxProb.value,
+    maxLiter: +maxLiter.value,
+    punkty: +punkty.value,
+    trudnosc: trudnosc.value
+  };
+  if(karaToggle.checked) obj.kara = +kara.value;
+
+  if(editIndex!=null){ items[editIndex]=obj; editIndex=null; }
+  else items.push(obj);
+
+  save(); renderList();
 }
 
-function calcLetters() {
-  const haslo = document.getElementById("haslo").value;
-  const letters = getUniqueLetters(haslo);
+function deleteItem(i){ items.splice(i,1); save(); renderList(); }
+function editItem(i){ Object.assign(window, items[i]); editIndex=i; }
 
-  document.getElementById("lettersResult").innerText =
-    `Unikalne litery (${letters.length}): ${letters.join(', ')}`;
-}
+function renderList(){
+  let q = search.value.toLowerCase();
+  let s = sort.value;
 
-function addItem() {
-  const haslo = document.getElementById("haslo").value;
-  const kategoria = document.getElementById("kategoria").value;
-  const maxProb = Number(document.getElementById("maxProb").value);
-  const maxLiter = Number(document.getElementById("maxLiter").value);
-  const punkty = Number(document.getElementById("punkty").value);
-  const trudnosc = document.getElementById("trudnosc").value;
+  let filtered = items.filter(i => i.haslo.toLowerCase().includes(q));
+  if(s) filtered = filtered.filter(i=>i.trudnosc===s);
 
-  let obj = { haslo, kategoria, maxProb, maxLiter, punkty, trudnosc };
-
-  if (karaToggle.checked) {
-    obj.kara = Number(document.getElementById("kara").value);
-  }
-
-  items.push(obj);
-  renderList();
-}
-
-function renderList() {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  items.forEach((item, i) => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerText = `${i+1}. ${item.haslo}`;
-    list.appendChild(div);
+  list.innerHTML='';
+  filtered.forEach((item,i)=>{
+    list.innerHTML += `<div class="item">
+      <span>${item.haslo} (${item.trudnosc})</span>
+      <div>
+        <button onclick="editItem(${i})">✏️</button>
+        <button onclick="deleteItem(${i})">❌</button>
+      </div>
+    </div>`;
   });
 }
 
-function generate() {
-  document.getElementById("output").innerText = JSON.stringify(items, null, 2);
+function generate(){ output.innerText = JSON.stringify(items,null,2); }
+function copyJSON(){ navigator.clipboard.writeText(output.innerText); }
+
+function downloadJSON(){
+  let blob = new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='data.json'; a.click();
 }
 
-function copyJSON() {
-  const text = document.getElementById("output").innerText;
-  navigator.clipboard.writeText(text);
+function importJSON(e){
+  let file = e.target.files[0];
+  let reader = new FileReader();
+  reader.onload = () => {
+    items = JSON.parse(reader.result);
+    save(); renderList();
+  };
+  reader.readAsText(file);
 }
 
-function downloadJSON() {
-  const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "data.json";
-  a.click();
+function toggleTheme(){
+  document.body.classList.toggle('light');
 }
+
+renderList();
 </script>
 
 </body>
