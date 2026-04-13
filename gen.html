@@ -1,141 +1,229 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generator JSON PRO</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Generator JSON SaaS</title>
 
 <style>
-:root {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --text: #ffffff;
-  --accent: #22c55e;
+:root{
+  --bg:#0b1220;
+  --card:#111a2e;
+  --card2:#0f172a;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --accent:#22c55e;
+  --danger:#ef4444;
+  --border:rgba(255,255,255,0.08);
 }
 
-.light {
-  --bg: #f1f5f9;
-  --card: #ffffff;
-  --text: #0f172a;
+.light{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --card2:#e2e8f0;
+  --text:#0f172a;
+  --muted:#475569;
+  --border:rgba(0,0,0,0.1);
 }
 
-body {
-  margin: 0;
-  font-family: Arial;
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  justify-content: center;
-  padding: 20px;
+*{box-sizing:border-box;font-family:Arial;}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  padding:18px;
 }
 
-.container {
-  width: 100%;
-  max-width: 600px;
-  background: var(--card);
-  padding: 20px;
-  border-radius: 20px;
+.container{
+  width:100%;
+  max-width:900px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
 }
 
-h1 { margin-bottom: 10px; }
-
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 10px;
-  border: none;
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
 }
 
-button {
-  margin-top: 8px;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  background: var(--accent);
-  color: white;
-  cursor: pointer;
+.title{
+  font-size:18px;
+  font-weight:700;
 }
 
-.row { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.list { margin-top: 10px; }
-
-.item {
-  display: flex;
-  justify-content: space-between;
-  background: rgba(0,0,0,0.2);
-  padding: 8px;
-  border-radius: 10px;
-  margin-top: 6px;
+.btn{
+  background:var(--accent);
+  border:none;
+  padding:10px 12px;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+  font-size:13px;
 }
 
-.output {
-  margin-top: 10px;
-  background: black;
-  color: #00ff9d;
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  white-space: pre-wrap;
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr;}
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+}
+
+input,select{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--card2);
+  color:var(--text);
+  outline:none;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.smallbtn{
+  padding:8px 10px;
+  font-size:12px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+}
+
+.green{background:var(--accent);color:#fff;}
+.red{background:var(--danger);color:#fff;}
+.gray{background:#334155;color:#fff;}
+
+.item{
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  margin-top:8px;
+  background:var(--card2);
+}
+
+.badge{
+  font-size:11px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#334155;
+}
+
+.output{
+  white-space:pre-wrap;
+  font-size:12px;
+  background:black;
+  color:#00ff9d;
+  padding:10px;
+  border-radius:12px;
+  margin-top:10px;
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
-  <h1>Generator JSON PRO</h1>
 
-  <button onclick="toggleTheme()">🎨 Zmień motyw</button>
+  <div class="header">
+    <div class="title">⚙️ Generator JSON SaaS</div>
+    <button class="btn" onclick="toggleTheme()">🎨 Theme</button>
+  </div>
 
-  <input id="search" placeholder="🔍 Szukaj hasła..." oninput="renderList()">
+  <div class="grid">
 
-  <select id="sort" onchange="renderList()">
-    <option value="">Sortowanie</option>
-    <option value="easy">easy</option>
-    <option value="medium">medium</option>
-    <option value="hard">hard</option>
-  </select>
+    <div class="card">
+      <h3>➕ Dodawanie</h3>
 
-  <input id="haslo" placeholder="Hasło">
-  <input id="kategoria" placeholder="Kategoria">
-  <input id="maxProb" type="number" placeholder="Max prób">
-  <input id="maxLiter" type="number" placeholder="Max liter">
-  <input id="punkty" type="number" placeholder="Punkty">
+      <input id="haslo" placeholder="Hasło" />
+      <input id="kategoria" placeholder="Kategoria" />
+      <input id="maxProb" type="number" placeholder="Max prób" />
+      <input id="maxLiter" type="number" placeholder="Max liter" />
+      <input id="punkty" type="number" placeholder="Punkty" />
 
-  <select id="trudnosc">
-    <option value="easy">easy</option>
-    <option value="medium">medium</option>
-    <option value="hard">hard</option>
-  </select>
+      <select id="trudnosc">
+        <option value="easy">easy</option>
+        <option value="medium">medium</option>
+        <option value="hard">hard</option>
+      </select>
 
-  <label><input type="checkbox" id="karaToggle"> Kara</label>
-  <input id="kara" type="number" placeholder="Kara" style="display:none;">
+      <label style="display:block;margin-top:10px;">
+        <input type="checkbox" id="karaToggle" /> Kara
+      </label>
+      <input id="kara" type="number" style="display:none" placeholder="Kara" />
 
-  <button onclick="addItem()">➕ Dodaj</button>
+      <div class="row" style="margin-top:10px;">
+        <button class="smallbtn green" onclick="saveItem()">➕ Zapisz</button>
+        <button class="smallbtn gray" onclick="clearForm()">🧹 Reset</button>
+      </div>
+    </div>
 
-  <input type="file" onchange="importJSON(event)">
+    <div class="card">
+      <h3>🔍 Lista</h3>
 
-  <div class="list" id="list"></div>
+      <input id="search" placeholder="Szukaj..." oninput="render()" />
 
-  <button onclick="generate()">Generuj JSON</button>
-  <button onclick="copyJSON()">📋 Kopiuj</button>
-  <button onclick="downloadJSON()">💾 Pobierz</button>
+      <select id="filter" onchange="render()">
+        <option value="">Wszystkie</option>
+        <option value="easy">easy</option>
+        <option value="medium">medium</option>
+        <option value="hard">hard</option>
+      </select>
 
-  <div class="output" id="output"></div>
+      <div id="list"></div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <h3>📦 JSON</h3>
+
+    <div class="row">
+      <button class="smallbtn green" onclick="generate()">Generuj</button>
+      <button class="smallbtn gray" onclick="copy()">Kopiuj</button>
+      <button class="smallbtn gray" onclick="download()">Pobierz</button>
+      <input type="file" onchange="importJSON(event)" />
+    </div>
+
+    <div class="output" id="out"></div>
+  </div>
+
 </div>
 
 <script>
-let items = JSON.parse(localStorage.getItem("items") || "[]");
-let editIndex = null;
+let items = JSON.parse(localStorage.getItem('items')||'[]');
+let editId = null;
 
-function save(){ localStorage.setItem("items", JSON.stringify(items)); }
+function saveLS(){ localStorage.setItem('items', JSON.stringify(items)); }
 
-karaToggle.onchange = ()=> kara.style.display = karaToggle.checked ? 'block':'none';
+karaToggle.onchange=()=>kara.style.display=karaToggle.checked?'block':'none';
 
-function addItem(){
-  let obj = {
+function saveItem(){
+  const obj = {
+    id: editId || Date.now(),
     haslo: haslo.value,
     kategoria: kategoria.value,
     maxProb: +maxProb.value,
@@ -143,61 +231,83 @@ function addItem(){
     punkty: +punkty.value,
     trudnosc: trudnosc.value
   };
+
   if(karaToggle.checked) obj.kara = +kara.value;
 
-  if(editIndex!=null){ items[editIndex]=obj; editIndex=null; }
+  const idx = items.findIndex(i=>i.id===obj.id);
+  if(idx>-1) items[idx]=obj;
   else items.push(obj);
 
-  save(); renderList();
+  editId=null;
+  saveLS(); render(); clearForm();
 }
 
-function deleteItem(i){ items.splice(i,1); save(); renderList(); }
-function editItem(i){ Object.assign(window, items[i]); editIndex=i; }
+function edit(id){
+  const i = items.find(x=>x.id===id);
+  if(!i) return;
 
-function renderList(){
-  let q = search.value.toLowerCase();
-  let s = sort.value;
+  haslo.value=i.haslo;
+  kategoria.value=i.kategoria;
+  maxProb.value=i.maxProb;
+  maxLiter.value=i.maxLiter;
+  punkty.value=i.punkty;
+  trudnosc.value=i.trudnosc;
 
-  let filtered = items.filter(i => i.haslo.toLowerCase().includes(q));
-  if(s) filtered = filtered.filter(i=>i.trudnosc===s);
+  if(i.kara!=null){karaToggle.checked=true; kara.style.display='block'; kara.value=i.kara;}
+
+  editId=id;
+}
+
+function del(id){
+  items=items.filter(i=>i.id!==id);
+  saveLS(); render();
+}
+
+function render(){
+  const q = search.value.toLowerCase();
+  const f = filter.value;
+
+  let data = items.filter(i=>i.haslo.toLowerCase().includes(q));
+  if(f) data=data.filter(i=>i.trudnosc===f);
 
   list.innerHTML='';
-  filtered.forEach((item,i)=>{
-    list.innerHTML += `<div class="item">
-      <span>${item.haslo} (${item.trudnosc})</span>
-      <div>
-        <button onclick="editItem(${i})">✏️</button>
-        <button onclick="deleteItem(${i})">❌</button>
-      </div>
-    </div>`;
+
+  data.forEach(i=>{
+    list.innerHTML+=
+      '<div class="item">' +
+      '<div><b>'+i.haslo+'</b><div class="badge">'+i.trudnosc+'</div></div>' +
+      '<div class="row">' +
+      '<button class="smallbtn gray" onclick="edit('+i.id+')">✏️</button>' +
+      '<button class="smallbtn red" onclick="del('+i.id+')">❌</button>' +
+      '</div></div>';
   });
 }
 
-function generate(){ output.innerText = JSON.stringify(items,null,2); }
-function copyJSON(){ navigator.clipboard.writeText(output.innerText); }
+function clearForm(){
+  document.querySelectorAll('input').forEach(i=>i.value='');
+  karaToggle.checked=false;
+  kara.style.display='none';
+}
 
-function downloadJSON(){
-  let blob = new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
-  let a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='data.json'; a.click();
+function generate(){ out.innerText=JSON.stringify(items,null,2); }
+function copy(){ navigator.clipboard.writeText(out.innerText); }
+function download(){
+  const b=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='data.json';
+  a.click();
 }
 
 function importJSON(e){
-  let file = e.target.files[0];
-  let reader = new FileReader();
-  reader.onload = () => {
-    items = JSON.parse(reader.result);
-    save(); renderList();
-  };
-  reader.readAsText(file);
+  const r=new FileReader();
+  r.onload=()=>{items=JSON.parse(r.result);saveLS();render();};
+  r.readAsText(e.target.files[0]);
 }
 
-function toggleTheme(){
-  document.body.classList.toggle('light');
-}
+function toggleTheme(){document.body.classList.toggle('light');}
 
-renderList();
+render();
 </script>
 
 </body>
