@@ -1,326 +1,574 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" class="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Generator JSON SaaS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wisielec Studio - Advanced Word Generator</title>
+    
+    <!-- Tailwind CSS (Play CDN dla pojedynczego pliku) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        discord: '#5865F2',
+                        darkbg: '#111827',
+                        cardbg: '#1F2937',
+                    }
+                }
+            }
+        }
+    </script>
 
-<style>
-:root{
-  --bg:#0b1220;
-  --card:#111a2e;
-  --card2:#0f172a;
-  --text:#e5e7eb;
-  --muted:#94a3b8;
-  --accent:#22c55e;
-  --danger:#ef4444;
-  --border:rgba(255,255,255,0.08);
-}
+    <!-- FontAwesome & SweetAlert2 & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-.light{
-  --bg:#f1f5f9;
-  --card:#ffffff;
-  --card2:#e2e8f0;
-  --text:#0f172a;
-  --muted:#475569;
-  --border:rgba(0,0,0,0.1);
-}
-
-*{box-sizing:border-box;font-family:Arial;}
-
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  display:flex;
-  justify-content:center;
-  padding:18px;
-}
-
-.container{
-  width:100%;
-  max-width:900px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 16px;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-}
-
-.title{font-size:18px;font-weight:700;}
-
-.btn{
-  background:var(--accent);
-  border:none;
-  padding:10px 12px;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-  font-size:13px;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr;}
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:14px;
-}
-
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  margin-top:8px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--card2);
-  color:var(--text);
-  outline:none;
-}
-
-textarea{resize:vertical}
-
-.row{display:flex;gap:10px;flex-wrap:wrap;}
-
-.smallbtn{
-  padding:8px 10px;
-  font-size:12px;
-  border-radius:10px;
-  border:none;
-  cursor:pointer;
-}
-
-.green{background:var(--accent);color:#fff;}
-.red{background:var(--danger);color:#fff;}
-.gray{background:#334155;color:#fff;}
-
-.item{
-  display:flex;
-  justify-content:space-between;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  margin-top:8px;
-  background:var(--card2);
-}
-
-.badge{
-  font-size:11px;
-  padding:3px 8px;
-  border-radius:999px;
-  background:#334155;
-}
-
-.output{
-  white-space:pre-wrap;
-  font-size:12px;
-  background:black;
-  color:#00ff9d;
-  padding:10px;
-  border-radius:12px;
-  margin-top:10px;
-}
-</style>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Niestandardowy, ładny pasek przewijania */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .glass { background: rgba(31, 41, 55, 0.7); backdrop-filter: blur(10px); }
+    </style>
 </head>
+<body class="bg-darkbg text-gray-100 min-h-screen flex flex-col">
 
-<body>
+    <!-- Header / Navbar -->
+    <header class="glass sticky top-0 z-50 border-b border-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-discord text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                    Wisielec Studio
+                </h1>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('importFile').click()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-file-import"></i> Import JSON
+                </button>
+                <input type="file" id="importFile" class="hidden" accept=".json" onchange="App.importJson(event)">
+                
+                <button onclick="App.exportJson()" class="bg-discord hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm transition font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-file-export"></i> Eksportuj JSON
+                </button>
+            </div>
+        </div>
+    </header>
 
-<div class="container">
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Kolumna Lewa: Formularz -->
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Statystyki -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-cardbg border border-gray-700 p-4 rounded-xl shadow-sm text-center">
+                    <div class="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Hasła</div>
+                    <div class="text-3xl font-bold text-white" id="stat-total">0</div>
+                </div>
+                <div class="bg-cardbg border border-gray-700 p-4 rounded-xl shadow-sm text-center">
+                    <div class="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Kategorie</div>
+                    <div class="text-3xl font-bold text-blue-400" id="stat-categories">0</div>
+                </div>
+            </div>
 
-  <div class="header">
-    <div class="title">⚙️ Generator JSON SaaS</div>
-    <button class="btn" onclick="toggleTheme()">🎨 Theme</button>
-  </div>
+            <!-- Formularz Dodawania/Edycji -->
+            <div class="bg-cardbg border border-gray-700 rounded-xl shadow-lg p-5 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-blue-500" id="form-bar"></div>
+                
+                <div class="flex justify-between items-center mb-4 mt-2">
+                    <h2 class="text-lg font-bold" id="form-title">Dodaj Nowe Hasło</h2>
+                    <button onclick="App.autoFill()" class="text-yellow-400 hover:text-yellow-300 text-sm flex items-center gap-1" title="Zautomatyzuj wypełnianie na podstawie trudności">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Magia
+                    </button>
+                </div>
 
-  <div class="grid">
+                <form id="wordForm" onsubmit="App.saveWord(event)" class="space-y-4">
+                    <input type="hidden" id="editIndex" value="-1">
 
-    <div class="card">
-      <h3>➕ Dodawanie</h3>
+                    <!-- Hasło -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Hasło <span class="text-red-500">*</span></label>
+                        <input type="text" id="haslo" required placeholder="np. Diamentowy miecz" 
+                            class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-discord focus:ring-1 focus:ring-discord transition"
+                            oninput="App.updateUniqueChars()">
+                        <div class="mt-1 flex justify-between items-center text-xs">
+                            <span class="text-gray-400">Tylko litery alfabetu polskiego/ang.</span>
+                            <span id="unique-badge" class="bg-gray-700 px-2 py-0.5 rounded text-blue-300 font-mono">Unikalne znaki: 0</span>
+                        </div>
+                    </div>
 
-      <input id="haslo" placeholder="Hasło" />
-      <input id="kategoria" placeholder="Kategoria" />
-      <input id="maxProb" type="number" placeholder="Max prób" />
-      <input id="maxLiter" type="number" placeholder="Max liter" />
-      <input id="punkty" type="number" placeholder="Punkty" />
+                    <!-- Kategoria & Trudność -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Kategoria <span class="text-red-500">*</span></label>
+                            <input type="text" id="kategoria" required list="categories-list" placeholder="np. Przedmioty" 
+                                class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-discord transition">
+                            <datalist id="categories-list"></datalist>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Trudność <span class="text-red-500">*</span></label>
+                            <select id="trudnosc" required class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-discord transition">
+                                <option value="easy">Łatwy (Easy)</option>
+                                <option value="medium">Średni (Medium)</option>
+                                <option value="hard">Trudny (Hard)</option>
+                            </select>
+                        </div>
+                    </div>
 
-      <select id="trudnosc">
-        <option value="easy">easy</option>
-        <option value="medium">medium</option>
-        <option value="hard">hard</option>
-      </select>
+                    <!-- Limity -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Max Prób (Życia) <span class="text-red-500">*</span></label>
+                            <input type="number" id="maxProb" required min="1" max="20" placeholder="10" 
+                                class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-discord transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Max Liter (Odkryć)</label>
+                            <input type="number" id="maxLiter" min="1" placeholder="np. 13" 
+                                class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-discord transition">
+                        </div>
+                    </div>
 
-      <label style="display:block;margin-top:10px;">
-        <input type="checkbox" id="karaToggle" /> Kara
-      </label>
-      <input id="kara" type="number" style="display:none" placeholder="Kara" />
+                    <!-- Punkty & Kara -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Punkty za odgad. <span class="text-red-500">*</span></label>
+                            <input type="number" id="punkty" required min="0" placeholder="10" 
+                                class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-discord transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1">Kara (Próg) <span class="text-gray-500 italic text-[10px]">(Opcjonalne)</span></label>
+                            <input type="number" id="kara" min="1" placeholder="np. 8" 
+                                class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-discord transition">
+                        </div>
+                    </div>
 
-      <div class="row" style="margin-top:10px;">
-        <button class="smallbtn green" onclick="saveItem()">➕ Zapisz</button>
-        <button class="smallbtn gray" onclick="clearForm()">🧹 Reset</button>
-      </div>
-    </div>
+                    <!-- Przyciski -->
+                    <div class="pt-2 flex gap-2">
+                        <button type="submit" id="btn-submit" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 rounded-lg font-bold transition shadow-lg shadow-green-900/50">
+                            <i class="fa-solid fa-plus mr-1"></i> Dodaj do bazy
+                        </button>
+                        <button type="button" id="btn-cancel" onclick="App.resetForm()" class="hidden bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-bold transition">
+                            Anuluj
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-    <div class="card">
-      <h3>🔍 Lista</h3>
+        <!-- Kolumna Prawa: Lista Haseł -->
+        <div class="lg:col-span-8 flex flex-col h-[calc(100vh-120px)]">
+            <div class="bg-cardbg border border-gray-700 rounded-xl shadow-lg flex-grow flex flex-col overflow-hidden">
+                
+                <!-- Wyszukiwarka i filtry -->
+                <div class="p-4 border-b border-gray-700 bg-gray-800/50 flex flex-col sm:flex-row gap-3 justify-between items-center">
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Szukaj hasła lub kategorii..." class="w-full bg-gray-900 border border-gray-600 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-discord" oninput="App.renderTable()">
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <select id="filterDifficulty" class="bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-discord w-full sm:w-auto" onchange="App.renderTable()">
+                            <option value="all">Wszystkie trudności</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                        <button onclick="App.clearAll()" class="bg-red-900/30 text-red-400 hover:bg-red-600 hover:text-white border border-red-800 px-3 py-2 rounded-lg text-sm transition" title="Wyczyść całą bazę">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
 
-      <input id="search" placeholder="Szukaj..." oninput="render()" />
+                <!-- Tabela -->
+                <div class="overflow-auto flex-grow relative">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead class="sticky top-0 bg-gray-800 shadow-md z-10">
+                            <tr class="text-gray-400 uppercase tracking-wider text-[11px]">
+                                <th class="p-3 pl-5">Hasło</th>
+                                <th class="p-3">Kategoria</th>
+                                <th class="p-3 text-center">Trudność</th>
+                                <th class="p-3 text-center">Parametry</th>
+                                <th class="p-3 pr-5 text-right">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-gray-700/50">
+                            <!-- Tu generują się wiersze -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Pusty stan -->
+                    <div id="empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+                        <i class="fa-regular fa-folder-open text-6xl mb-3 opacity-50"></i>
+                        <p class="text-lg">Brak haseł w bazie</p>
+                        <p class="text-sm">Dodaj nowe hasło formularzem z lewej strony.</p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </main>
 
-      <select id="filter" onchange="render()">
-        <option value="">Wszystkie</option>
-        <option value="easy">easy</option>
-        <option value="medium">medium</option>
-        <option value="hard">hard</option>
-      </select>
+    <script>
+        // Główny obiekt aplikacji
+        const App = {
+            words:[],
+            editingIndex: -1,
 
-      <div id="list"></div>
-    </div>
+            init() {
+                // Ładowanie z LocalStorage
+                const saved = localStorage.getItem('wisielec_words');
+                if (saved) {
+                    try {
+                        this.words = JSON.parse(saved);
+                    } catch (e) {
+                        console.error('Błąd ładowania localStorage', e);
+                    }
+                }
+                this.updateCategoryDatalist();
+                this.renderTable();
+            },
 
-  </div>
+            // 100% Odzwierciedlenie algorytmu z Twojego bota!
+            calculateUniqueChars(str) {
+                if (!str) return 0;
+                // Logika identyczna jak w utils/hangmanLogic.js -> normalize()
+                const normalized = str.normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/ł/g, "l").replace(/Ł/g, "L")
+                    .toLowerCase();
+                
+                // Zliczamy tylko litery (od a do z)
+                const lettersOnly = normalized.replace(/[^a-z]/g, '');
+                return new Set(lettersOnly).size;
+            },
 
-  <!-- 🔥 NOWY KALKULATOR -->
-  <div class="card">
-    <h3>🔢 Kalkulator unikalnych znaków (bez spacji)</h3>
+            updateUniqueChars() {
+                const haslo = document.getElementById('haslo').value;
+                const uniqueCount = this.calculateUniqueChars(haslo);
+                document.getElementById('unique-badge').innerText = `Unikalne znaki: ${uniqueCount}`;
+                return uniqueCount;
+            },
 
-    <textarea id="textInput" placeholder="Wpisz tekst..." oninput="countUnique()"></textarea>
+            // Przycisk "Magia" - auto wypełnianie pól na podst. trudności
+            autoFill() {
+                const trudnosc = document.getElementById('trudnosc').value;
+                const uniqueChars = this.updateUniqueChars();
+                
+                let mProb, mLiter, pkt, karaVal;
 
-    <div class="output" id="uniqueOut">Unikalne znaki: 0</div>
-  </div>
+                // Bazujemy na balansie gry
+                switch(trudnosc) {
+                    case 'easy':
+                        mProb = 10; pkt = 10;
+                        karaVal = Math.max(1, uniqueChars - 2); 
+                        break;
+                    case 'medium':
+                        mProb = 7; pkt = 15;
+                        karaVal = Math.max(1, Math.floor(uniqueChars * 0.7)); 
+                        break;
+                    case 'hard':
+                        mProb = 5; pkt = 25;
+                        karaVal = Math.max(1, Math.floor(uniqueChars * 0.5)); 
+                        break;
+                }
+                
+                document.getElementById('maxProb').value = mProb;
+                document.getElementById('punkty').value = pkt;
+                document.getElementById('maxLiter').value = uniqueChars; // Pozwala odkryć wszystkie
+                document.getElementById('kara').value = karaVal;
 
-  <div class="card">
-    <h3>📦 JSON</h3>
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success',
+                    title: 'Wartości uzupełnione magicznie!', showConfirmButton: false, timer: 1500
+                });
+            },
 
-    <div class="row">
-      <button class="smallbtn green" onclick="generate()">Generuj</button>
-      <button class="smallbtn gray" onclick="copy()">Kopiuj</button>
-      <button class="smallbtn gray" onclick="download()">Pobierz</button>
-      <input type="file" onchange="importJSON(event)" />
-    </div>
+            saveWord(e) {
+                e.preventDefault();
+                
+                const haslo = document.getElementById('haslo').value.trim();
+                const kategoria = document.getElementById('kategoria').value.trim();
+                const trudnosc = document.getElementById('trudnosc').value;
+                const maxProb = parseInt(document.getElementById('maxProb').value);
+                const maxLiter = document.getElementById('maxLiter').value ? parseInt(document.getElementById('maxLiter').value) : null;
+                const punkty = parseInt(document.getElementById('punkty').value);
+                const kara = document.getElementById('kara').value ? parseInt(document.getElementById('kara').value) : null;
 
-    <div class="output" id="out"></div>
-  </div>
+                // Walidacja logiczna
+                if(kara && maxLiter && kara >= maxLiter) {
+                    Swal.fire('Błąd Logiczny', 'Kara (próg utraty punktów) nie może być większa lub równa całkowitemu limitowi maxLiter!', 'warning');
+                    return;
+                }
 
-</div>
+                const wordObj = { haslo, kategoria, maxProb, punkty, trudnosc };
+                if (maxLiter !== null) wordObj.maxLiter = maxLiter;
+                if (kara !== null) wordObj.kara = kara; // Opcjonalny klucz!
 
-<script>
-let items = JSON.parse(localStorage.getItem('items')||'[]');
-let editId = null;
+                if (this.editingIndex > -1) {
+                    this.words[this.editingIndex] = wordObj;
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Zaktualizowano hasło', showConfirmButton: false, timer: 1500 });
+                } else {
+                    // Sprawdź duplikaty
+                    const isDupe = this.words.some(w => w.haslo.toLowerCase() === haslo.toLowerCase());
+                    if(isDupe) {
+                        Swal.fire('Uwaga', 'Takie hasło już istnieje w bazie!', 'warning');
+                        return;
+                    }
+                    this.words.unshift(wordObj); // Dodaj na początek
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Dodano nowe hasło', showConfirmButton: false, timer: 1500 });
+                }
 
-function saveLS(){ localStorage.setItem('items', JSON.stringify(items)); }
+                this.saveData();
+                this.resetForm();
+                // Nie czyścimy kategorii i trudności, żeby można było szybko dodać kolejne z tej samej!
+                document.getElementById('haslo').value = '';
+                document.getElementById('haslo').focus();
+            },
 
-karaToggle.onchange=()=>kara.style.display=karaToggle.checked?'block':'none';
+            editWord(index) {
+                // Znajdź prawdziwy index w głównej tablicy, jeśli użyto filtra (tutaj uproszczenie, przekazujemy ID bezp z przycisku renderowanego dla konkretnego obiektu)
+                const word = this.words[index];
+                if(!word) return;
 
-function saveItem(){
-  const obj = {
-    id: editId || Date.now(),
-    haslo: haslo.value,
-    kategoria: kategoria.value,
-    maxProb: +maxProb.value,
-    maxLiter: +maxLiter.value,
-    punkty: +punkty.value,
-    trudnosc: trudnosc.value
-  };
+                document.getElementById('haslo').value = word.haslo;
+                document.getElementById('kategoria').value = word.kategoria;
+                document.getElementById('trudnosc').value = word.trudnosc;
+                document.getElementById('maxProb').value = word.maxProb;
+                document.getElementById('maxLiter').value = word.maxLiter || '';
+                document.getElementById('punkty').value = word.punkty;
+                document.getElementById('kara').value = word.kara || '';
 
-  if(karaToggle.checked) obj.kara = +kara.value;
+                this.editingIndex = index;
+                this.updateUniqueChars();
 
-  const idx = items.findIndex(i=>i.id===obj.id);
-  if(idx>-1) items[idx]=obj;
-  else items.push(obj);
+                // UI Zmiany
+                document.getElementById('form-title').innerText = "Edytuj Hasło";
+                document.getElementById('btn-submit').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Zapisz Zmiany';
+                document.getElementById('btn-submit').className = "flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-bold transition shadow-lg shadow-blue-900/50";
+                document.getElementById('btn-cancel').classList.remove('hidden');
+                document.getElementById('form-bar').className = "absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-purple-500";
+                
+                // Przewiń na górę (w trybie mobilnym)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
 
-  editId=null;
-  saveLS(); render(); clearForm();
-}
+            duplicateWord(index) {
+                const word = {...this.words[index]};
+                word.haslo = word.haslo + " (Kopia)";
+                this.words.unshift(word);
+                this.saveData();
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Zduplikowano!', showConfirmButton: false, timer: 1500 });
+            },
 
-function edit(id){
-  const i = items.find(x=>x.id===id);
-  if(!i) return;
+            deleteWord(index) {
+                Swal.fire({
+                    title: 'Jesteś pewien?',
+                    text: `Usuniesz hasło: ${this.words[index].haslo}`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#4b5563',
+                    confirmButtonText: 'Tak, usuń',
+                    cancelButtonText: 'Anuluj'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.words.splice(index, 1);
+                        if(this.editingIndex === index) this.resetForm();
+                        this.saveData();
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Usunięto', showConfirmButton: false, timer: 1000 });
+                    }
+                })
+            },
 
-  haslo.value=i.haslo;
-  kategoria.value=i.kategoria;
-  maxProb.value=i.maxProb;
-  maxLiter.value=i.maxLiter;
-  punkty.value=i.punkty;
-  trudnosc.value=i.trudnosc;
+            clearAll() {
+                if(this.words.length === 0) return;
+                Swal.fire({
+                    title: 'Wyczyścić całą bazę?',
+                    text: "Tej akcji nie da się cofnąć! Upewnij się, że masz pobraną kopię zapasową.",
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#4b5563',
+                    confirmButtonText: 'NUKLEARNY PRZYCISK (Usuń wszystko)'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.words =[];
+                        this.saveData();
+                        Swal.fire('Wyczyszczono', 'Baza jest teraz pusta.', 'success');
+                    }
+                })
+            },
 
-  if(i.kara!=null){karaToggle.checked=true; kara.style.display='block'; kara.value=i.kara;}
+            resetForm() {
+                this.editingIndex = -1;
+                document.getElementById('wordForm').reset();
+                this.updateUniqueChars();
+                
+                document.getElementById('form-title').innerText = "Dodaj Nowe Hasło";
+                document.getElementById('btn-submit').innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Dodaj do bazy';
+                document.getElementById('btn-submit').className = "flex-1 bg-green-600 hover:bg-green-500 text-white py-2 rounded-lg font-bold transition shadow-lg shadow-green-900/50";
+                document.getElementById('btn-cancel').classList.add('hidden');
+                document.getElementById('form-bar').className = "absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-blue-500";
+            },
 
-  editId=id;
-}
+            saveData() {
+                localStorage.setItem('wisielec_words', JSON.stringify(this.words));
+                this.updateCategoryDatalist();
+                this.renderTable();
+            },
 
-function del(id){
-  items=items.filter(i=>i.id!==id);
-  saveLS(); render();
-}
+            updateCategoryDatalist() {
+                const categories =[...new Set(this.words.map(w => w.kategoria))].sort();
+                const datalist = document.getElementById('categories-list');
+                datalist.innerHTML = categories.map(c => `<option value="${c}">`).join('');
+                document.getElementById('stat-categories').innerText = categories.length;
+            },
 
-function render(){
-  const q = search.value.toLowerCase();
-  const f = filter.value;
+            getDifficultyBadge(diff) {
+                const maps = {
+                    'easy': '<span class="bg-green-900/50 text-green-400 border border-green-800 px-2 py-1 rounded text-xs font-bold">EASY</span>',
+                    'medium': '<span class="bg-yellow-900/50 text-yellow-400 border border-yellow-800 px-2 py-1 rounded text-xs font-bold">MEDIUM</span>',
+                    'hard': '<span class="bg-red-900/50 text-red-400 border border-red-800 px-2 py-1 rounded text-xs font-bold">HARD</span>',
+                };
+                return maps[diff] || maps['easy'];
+            },
 
-  let data = items.filter(i=>i.haslo.toLowerCase().includes(q));
-  if(f) data=data.filter(i=>i.trudnosc===f);
+            renderTable() {
+                const tbody = document.getElementById('table-body');
+                const emptyState = document.getElementById('empty-state');
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                const filterDiff = document.getElementById('filterDifficulty').value;
 
-  list.innerHTML='';
+                document.getElementById('stat-total').innerText = this.words.length;
 
-  data.forEach(i=>{
-    list.innerHTML+=
-      '<div class="item">' +
-      '<div><b>'+i.haslo+'</b><div class="badge">'+i.trudnosc+'</div></div>' +
-      '<div class="row">' +
-      '<button class="smallbtn gray" onclick="edit('+i.id+')">✏️</button>' +
-      '<button class="smallbtn red" onclick="del('+i.id+')">❌</button>' +
-      '</div></div>';
-  });
-}
+                let html = '';
+                let displayedCount = 0;
 
-function clearForm(){
-  document.querySelectorAll('input').forEach(i=>i.value='');
-  karaToggle.checked=false;
-  kara.style.display='none';
-}
+                this.words.forEach((word, index) => {
+                    // Logika Filtrowania
+                    if (filterDiff !== 'all' && word.trudnosc !== filterDiff) return;
+                    if (search && !word.haslo.toLowerCase().includes(search) && !word.kategoria.toLowerCase().includes(search)) return;
 
-function generate(){ out.innerText=JSON.stringify(items,null,2); }
-function copy(){ navigator.clipboard.writeText(out.innerText); }
-function download(){
-  const b=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='data.json';
-  a.click();
-}
+                    displayedCount++;
+                    
+                    html += `
+                        <tr class="hover:bg-gray-800/80 transition group border-l-2 ${this.editingIndex === index ? 'border-discord bg-gray-800/50' : 'border-transparent'}">
+                            <td class="p-3 pl-5 font-medium text-white break-words max-w-[150px]">${word.haslo}</td>
+                            <td class="p-3 text-gray-400">${word.kategoria}</td>
+                            <td class="p-3 text-center">${this.getDifficultyBadge(word.trudnosc)}</td>
+                            <td class="p-3 text-center">
+                                <div class="flex items-center justify-center gap-2 text-xs">
+                                    <span title="Max Prób"><i class="fa-solid fa-heart text-red-500"></i> ${word.maxProb}</span>
+                                    <span title="Punkty"><i class="fa-solid fa-star text-yellow-500"></i> ${word.punkty}</span>
+                                    ${word.kara ? `<span title="Kara"><i class="fa-solid fa-arrow-down-long text-red-400"></i> ${word.kara}</span>` : ''}
+                                </div>
+                            </td>
+                            <td class="p-3 pr-5 text-right whitespace-nowrap">
+                                <button onclick="App.editWord(${index})" class="text-blue-400 hover:text-blue-300 p-2 transition" title="Edytuj">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button onclick="App.duplicateWord(${index})" class="text-gray-400 hover:text-white p-2 transition" title="Duplikuj">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                                <button onclick="App.deleteWord(${index})" class="text-red-500 hover:text-red-400 p-2 transition" title="Usuń">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
 
-function importJSON(e){
-  const r=new FileReader();
-  r.onload=()=>{items=JSON.parse(r.result);saveLS();render();};
-  r.readAsText(e.target.files[0]);
-}
+                tbody.innerHTML = html;
 
-function toggleTheme(){document.body.classList.toggle('light');}
+                if (displayedCount === 0) {
+                    emptyState.classList.remove('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                }
+            },
 
-/* 🔥 NOWA FUNKCJA */
-function countUnique(){
-  const text = textInput.value.replace(/\s/g,'');
-  const unique = new Set(text);
-  uniqueOut.innerText = "Unikalne znaki: " + unique.size;
-}
+            exportJson() {
+                if(this.words.length === 0) {
+                    Swal.fire('Pusto!', 'Nie ma czego eksportować.', 'info');
+                    return;
+                }
+                // Prettify JSON
+                const dataStr = JSON.stringify(this.words, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `worlds.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
 
-render();
-</script>
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Plik pobrany!', showConfirmButton: false, timer: 2000 });
+            },
 
+            importJson(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (!Array.isArray(importedData)) throw new Error("Plik musi zawierać tablicę JSON (zaczynać się od [ ]).");
+                        
+                        // Zabezpieczenie przed błędną strukturą
+                        const validData = importedData.filter(item => item.haslo && item.kategoria && item.maxProb !== undefined && item.punkty !== undefined);
+                        
+                        if(validData.length === 0) throw new Error("Nie znaleziono poprawnych obiektów haseł w pliku.");
+
+                        Swal.fire({
+                            title: 'Znaleziono ' + validData.length + ' haseł',
+                            text: "Co chcesz zrobić z obecnymi danymi?",
+                            icon: 'question',
+                            showDenyButton: true,
+                            showCancelButton: true,
+                            confirmButtonText: 'Dodaj do moich',
+                            denyButtonText: `Nadpisz bazę`,
+                            cancelButtonText: 'Anuluj',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.words =[...validData, ...this.words];
+                                this.saveData();
+                                Swal.fire('Scalono!', 'Hasła zostały dodane do bazy.', 'success');
+                            } else if (result.isDenied) {
+                                this.words = validData;
+                                this.saveData();
+                                Swal.fire('Nadpisano!', 'Masz teraz tylko hasła z pliku.', 'success');
+                            }
+                            // Czyszczenie inputu żeby można było wgrać ten sam plik ponownie
+                            event.target.value = '';
+                        });
+
+                    } catch (error) {
+                        Swal.fire('Błąd odczytu', error.message || 'Plik jest uszkodzony lub ma zły format.', 'error');
+                        event.target.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+
+        // Inicjalizacja po załadowaniu DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
+    </script>
 </body>
 </html>
